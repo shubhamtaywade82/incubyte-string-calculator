@@ -3,6 +3,8 @@
 class StringCalculator
   def add(numbers)
     s = numbers.to_s
-    s.split(",").map(&:to_i).sum
+    delimiters = [",", "\n"]
+    tokens = s.split(Regexp.union(delimiters)).reject(&:empty?)
+    tokens.map(&:to_i).sum
   end
 end
