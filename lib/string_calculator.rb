@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class StringCalculator
+  DEFAULT_DELIMITERS = [",", "\n"].freeze
+
   def initialize
     @call_count = 0
   end
@@ -8,29 +10,48 @@ class StringCalculator
   def add(numbers)
     @call_count += 1
 
-    s = numbers.to_s
-    delimiters = [",", "\n"]
+    delimiters, body = extract_delimiters_and_body(numbers.to_s)
+    nums = tokenize(body, delimiters).map(&:to_i)
 
-    if s.start_with?("//")
-      header, rest = s.split("\n", 2)
-      if header.start_with?("//[")
-        delimiters.concat(header.scan(/\[(.+?)\]/).flatten)
-      else
-        delimiters << header[2..]
-      end
-      s = rest.to_s
-    end
-
-    tokens = s.split(Regexp.union(delimiters)).reject(&:empty?)
-    nums   = tokens.map(&:to_i)
-
-    negatives = nums.select(&:negative?)
-    raise ArgumentError, "negative numbers not allowed #{negatives.join(',')}" unless negatives.empty?
+    validate_no_negatives!(nums)
 
     nums.reject { |n| n > 1000 }.sum
   end
 
   def get_called_count
     @call_count
+  end
+
+  private
+
+  def extract_delimiters_and_body(input)
+    delims = DEFAULT_DELIMITERS.dup
+    return [delims, input] unless input.start_with?("//")
+
+    header, rest = input.split("\n", 2)
+    delims.concat(parse_header_delimiters(header))
+    [delims, rest.to_s]
+  end
+
+  def parse_header_delimiters(header)
+    if header.start_with?("//[")
+      header.scan(/\[(.+?)\]/).flatten
+    else
+      [header[2..]]
+    end
+  end
+
+  def tokenize(str, delims)
+    return [] if str.empty?
+
+    parts = str.split(Regexp.union(delims))
+    parts.reject(&:empty?)
+  end
+
+  def validate_no_negatives!(nums)
+    negs = nums.select(&:negative?)
+    return if negs.empty?
+
+    raise ArgumentError, "negative numbers not allowed #{negs.join(',')}"
   end
 end
