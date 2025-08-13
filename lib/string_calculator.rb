@@ -7,11 +7,18 @@ class StringCalculator
 
     if s.start_with?("//")
       header, rest = s.split("\n", 2)
-      delimiters << header[2..]       # single custom delimiter after //
-      s = rest.to_s                   # rest contains the actual numbers
+      delimiters << header[2..]
+      s = rest.to_s
     end
 
     tokens = s.split(Regexp.union(delimiters)).reject(&:empty?)
-    tokens.map(&:to_i).sum
+    nums   = tokens.map(&:to_i)
+
+    negatives = nums.select { |n| n.negative? }
+    unless negatives.empty?
+      raise ArgumentError, "negative numbers not allowed #{negatives.join(',')}"
+    end
+
+    nums.sum
   end
 end
