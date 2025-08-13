@@ -14,11 +14,11 @@ class StringCalculator
     tokens = s.split(Regexp.union(delimiters)).reject(&:empty?)
     nums   = tokens.map(&:to_i)
 
-    negatives = nums.select { |n| n.negative? }
+    negatives = nums.select(&:negative?)
     unless negatives.empty?
       raise ArgumentError, "negative numbers not allowed #{negatives.join(',')}"
     end
 
-    nums.sum
+    nums.reject { |n| n > 1000 }.sum
   end
 end
