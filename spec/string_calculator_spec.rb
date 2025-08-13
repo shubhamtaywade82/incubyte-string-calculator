@@ -55,5 +55,16 @@ RSpec.describe StringCalculator do
     it 'supports multiple multi-char delimiters: "//[**][%%]\\n1**2%%3" => 6' do
       expect(calc.add("//[**][%%]\n1**2%%3")).to eq(6)
     end
+
+    it "exposes how many times add() was called via get_called_count" do
+      expect(calc.get_called_count).to eq(0)
+
+      calc.add("1,2")
+      expect(calc.get_called_count).to eq(1)
+
+      calc.add("3")
+      calc.add("")
+      expect(calc.get_called_count).to eq(3)
+    end
   end
 end
